@@ -13,6 +13,7 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
+
 INSERT INTO products (
   seller_id, product_name, description,
   base_price, auction_end
@@ -39,4 +40,27 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (u
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getProductById = `-- name: GetProductById :one
+
+SELECT id, seller_id, product_name, description, base_price, auction_end, is_sold, created_at, updated_at FROM products
+WHERE id = $1
+`
+
+func (q *Queries) GetProductById(ctx context.Context, id uuid.UUID) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductById, id)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.SellerID,
+		&i.ProductName,
+		&i.Description,
+		&i.BasePrice,
+		&i.AuctionEnd,
+		&i.IsSold,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
